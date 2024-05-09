@@ -4,6 +4,7 @@ import com.crowdin.client.core.CrowdinApi;
 import com.crowdin.client.core.http.HttpRequestConfig;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.util.SortOrderGenerator;
 import com.crowdin.client.core.model.*;
 import com.crowdin.client.teams.model.TeamResponseObject;
 import com.crowdin.client.users.model.*;
@@ -46,7 +47,34 @@ public class UsersApi extends CrowdinApi {
         ProjectMemberResponseList response = this.httpClient.get(builtUrl, new HttpRequestConfig(queryParams), ProjectMemberResponseList.class);
         return ProjectMemberResponseList.to(response);
     }
-
+    /**
+     * List project members. For Crowdin Enterprise only
+     * @param projectId Project Identifier. Get via List Projects
+     * @param search Search users by firstName, lastName or username
+     * @param languageId Language Identifier. Get via Project Target Languages
+     * @param workflowStepId Workflow Step Identifier. Get via List Workflow Steps
+     * @param limit A maximum number of items to retrieve
+     * @param offset A starting offset in the collection
+     * @param orderByMap map containing the sort keys and strategy (default id)    
+     * @return list of project members
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.projects.members.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<ProjectMember> listProjectMembersEnterprise(Long projectId, String search, String languageId, Long workflowStepId, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        String builtUrl = String.format("%s/projects/%d/members", this.url, projectId);
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+            "search", Optional.ofNullable(search),
+            "languageId", Optional.ofNullable(languageId),
+            "workflowStepId", Optional.ofNullable(workflowStepId),
+            "limit", Optional.ofNullable(limit),
+            "offset", Optional.ofNullable(offset),
+            "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        ProjectMemberResponseList response = this.httpClient.get(builtUrl, new HttpRequestConfig(queryParams), ProjectMemberResponseList.class);
+        return ProjectMemberResponseList.to(response);
+    }
+    
     /**
      * @param projectId project identifier
      * @param request request object
@@ -124,6 +152,31 @@ public class UsersApi extends CrowdinApi {
         return UserResponseList.to(userResponseList);
     }
 
+    /**
+     * @param status filter by status
+     * @param search search users by firstName, lastName, username, or email (2 or more characters)
+     * @param twoFactor filter by two-factor authentication status
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id)    
+     * @return list of users
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.users.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<User> listUsers(Status status, String search, TwoFactor twoFactor, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "status", Optional.ofNullable(status),
+                "search", Optional.ofNullable(search),
+                "twoFactor", Optional.ofNullable(twoFactor),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        UserResponseList userResponseList = this.httpClient.get(this.url + "/users", new HttpRequestConfig(queryParams), UserResponseList.class);
+        return UserResponseList.to(userResponseList);
+    }
+    
     /**
      * @param request request object
      * @return invited user
@@ -203,6 +256,29 @@ public class UsersApi extends CrowdinApi {
         return TeamMemberResponseList.to(teamMemberResponseList);
     }
 
+    /**
+     * @param projectId project identifier
+     * @param search search users by firstName, lastName, username, or email (2 or more characters)
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id)
+     * @return list of team members
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.projects.members.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<TeamMember> listProjectMembers(Long projectId, String search, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "search", Optional.ofNullable(search),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        TeamMemberResponseList teamMemberResponseList = this.httpClient.get(this.url + "/projects/" + projectId + "/members", new HttpRequestConfig(queryParams), TeamMemberResponseList.class);
+        return TeamMemberResponseList.to(teamMemberResponseList);
+    }
+
+    
     /**
      * @param projectId project identifier
      * @param memberId member identifier

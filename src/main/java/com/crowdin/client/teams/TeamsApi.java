@@ -4,11 +4,13 @@ import com.crowdin.client.core.CrowdinApi;
 import com.crowdin.client.core.http.HttpRequestConfig;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.util.SortOrderGenerator;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.core.model.SortOrder;
 import com.crowdin.client.teams.model.AddTeamMembersRequest;
 import com.crowdin.client.teams.model.AddTeamMembersResponse;
 import com.crowdin.client.teams.model.AddTeamMembersResponseInternal;
@@ -63,6 +65,25 @@ public class TeamsApi extends CrowdinApi {
         return TeamResponseList.to(teamResponseList);
     }
 
+    /**
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id)
+     * @return list of teams
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.teams.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Team> listTeams(Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        TeamResponseList teamResponseList = this.httpClient.get(this.url + "/teams", new HttpRequestConfig(queryParams), TeamResponseList.class);
+        return TeamResponseList.to(teamResponseList);
+    }
+    
     /**
      * @param request request object
      * @return newly created team

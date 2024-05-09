@@ -4,6 +4,7 @@ import com.crowdin.client.core.CrowdinApi;
 import com.crowdin.client.core.http.HttpRequestConfig;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.util.SortOrderGenerator;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.DownloadLink;
@@ -11,6 +12,7 @@ import com.crowdin.client.core.model.DownloadLinkResponseObject;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.core.model.SortOrder;
 import com.crowdin.client.projectsgroups.model.AddGroupRequest;
 import com.crowdin.client.projectsgroups.model.AddProjectFileFormatSettingsRequest;
 import com.crowdin.client.projectsgroups.model.AddProjectRequest;
@@ -61,6 +63,29 @@ public class ProjectsGroupsApi extends CrowdinApi {
         return GroupResponseList.to(groupResponseList);
     }
 
+
+    /**
+     * @param parentId parent group identifier. Get via List Groups
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id) 
+     * @return list of groups
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.groups.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Group> listGroups(Long parentId, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "parentId", Optional.ofNullable(parentId),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+                
+        );
+        GroupResponseList groupResponseList = this.httpClient.get(this.url + "/groups", new HttpRequestConfig(queryParams), GroupResponseList.class);
+        return GroupResponseList.to(groupResponseList);
+    }
+    
     /**
      * @param request request object
      * @return newly created group
@@ -130,6 +155,32 @@ public class ProjectsGroupsApi extends CrowdinApi {
         return ProjectResponseList.to(projectResponseList);
     }
 
+    /**
+     * @param groupId group identifier (optional)
+     * @param hasManagerAccess projects with manager access (default 0)
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id) 
+     * @return list of projects
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.projects.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.projects.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<? extends Project> listProjects(Long groupId, Integer hasManagerAccess, Integer limit, Integer offset, Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "groupId", Optional.ofNullable(groupId),
+                "hasManagerAccess", Optional.ofNullable(hasManagerAccess),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+                );
+
+        ProjectResponseList projectResponseList = this.httpClient.get(this.url + "/projects", new HttpRequestConfig(queryParams), ProjectResponseList.class);
+        return ProjectResponseList.to(projectResponseList);
+    }
+
+    
     /**
      * @param request request object
      * @return newly created project

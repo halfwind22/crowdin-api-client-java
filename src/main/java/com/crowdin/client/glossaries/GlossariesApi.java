@@ -4,6 +4,7 @@ import com.crowdin.client.core.CrowdinApi;
 import com.crowdin.client.core.http.HttpRequestConfig;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.util.SortOrderGenerator;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.DownloadLink;
@@ -11,6 +12,7 @@ import com.crowdin.client.core.model.DownloadLinkResponseObject;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.core.model.SortOrder;
 import com.crowdin.client.glossaries.model.AddGlossaryRequest;
 import com.crowdin.client.glossaries.model.AddTermRequest;
 import com.crowdin.client.glossaries.model.Concept;
@@ -75,6 +77,26 @@ public class GlossariesApi extends CrowdinApi {
         Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
                 "limit", Optional.ofNullable(limit),
                 "offset", Optional.ofNullable(offset)
+        );
+        ConceptResponseList conceptResponseList = this.httpClient.get(this.url + "/glossaries/" + glossaryId + "/concepts", new HttpRequestConfig(queryParams), ConceptResponseList.class);
+        return ConceptResponseList.to(conceptResponseList);
+    }
+    /**
+     * @param glossaryId glossary identifier
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id)
+     * @return list of concepts
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.glossaries.concepts.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.glossaries.concepts.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Concept> listConcepts(Long glossaryId, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
         );
         ConceptResponseList conceptResponseList = this.httpClient.get(this.url + "/glossaries/" + glossaryId + "/concepts", new HttpRequestConfig(queryParams), ConceptResponseList.class);
         return ConceptResponseList.to(conceptResponseList);
@@ -289,6 +311,35 @@ public class GlossariesApi extends CrowdinApi {
         return TermResponseList.to(termResponseList);
     }
 
+    /**
+     * @param glossaryId glossary identifier
+     * @param userId user identifier
+     * @param languageId language identifier
+     * @param conceptId concept identifier
+     * @param translationOfTermId term identifier
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id)
+     * @return list of terms
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.glossaries.terms.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.glossaries.terms.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Term> listTerms(Long glossaryId, Long userId, String languageId, Long conceptId, @Deprecated Long translationOfTermId, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "userId", Optional.ofNullable(userId),
+                "languageId", Optional.ofNullable(languageId),
+                "conceptId", Optional.ofNullable(conceptId),
+                "translationOfTermId", Optional.ofNullable(translationOfTermId),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        TermResponseList termResponseList = this.httpClient.get(this.url + "/glossaries/" + glossaryId + "/terms", new HttpRequestConfig(queryParams), TermResponseList.class);
+        return TermResponseList.to(termResponseList);
+    }
+    
     /**
      * @param glossaryId glossary identifier
      * @param request request object

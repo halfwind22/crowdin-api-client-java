@@ -4,12 +4,14 @@ import com.crowdin.client.core.CrowdinApi;
 import com.crowdin.client.core.http.HttpRequestConfig;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.util.SortOrderGenerator;
 import com.crowdin.client.core.model.BooleanInt;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.core.model.SortOrder;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.labels.model.LabelResponseList;
@@ -58,6 +60,31 @@ public class LabelsApi extends CrowdinApi {
         return LabelResponseList.to(labelResponseList);
     }
 
+    /**
+     * @param projectId Project Identifier
+     * @param limit A maximum number of items to retrieve. Default: 25
+     * @param offset A starting offset in the collection. Default: 0
+     * @param isSystem Filter collection by isSystem value
+     * @param orderByMap map containing the sort keys and strategy (default id)
+     * @return list of labels
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.projects.labels.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.projects.labels.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Label> listLabels(Long projectId, Integer limit, Integer offset, BooleanInt isSystem,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        String builtUrl = String.format("%s/projects/%d/labels", this.url, projectId);
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+            "limit", Optional.ofNullable(limit),
+            "offset", Optional.ofNullable(offset),
+            "isSystem", Optional.ofNullable(isSystem),
+            "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        LabelResponseList labelResponseList = this.httpClient.get(builtUrl, new HttpRequestConfig(queryParams), LabelResponseList.class);
+        return LabelResponseList.to(labelResponseList);
+    }
+
+    
     /**
      * @param projectId Project Identifier
      * @param request Request object

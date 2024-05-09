@@ -15,7 +15,7 @@ public class Sandbox {
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         if (args.length > 0) {
             try {
-                Credentials credentials = new Credentials(args[0], "oliynyk");
+                Credentials credentials = new Credentials(args[0], null);
                 var client = new Client(credentials, ClientConfig.builder().httpTimeoutMs(5000).build());
                 ResponseObject<User> user = client.getUsersApi().getAuthenticatedUser();
                 System.out.println(user.getData());

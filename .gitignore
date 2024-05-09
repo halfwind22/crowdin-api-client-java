@@ -9,3 +9,20 @@
 /target
 /build
 /out
+
+# Eclipse IDE files
+.classpath
+.project
+.settings/
+
+# Logs and binaries
+log/
+bin/
+tmp/
+*.log
+
+# Cache and index files
+.metadata/
+*.tmp
+*.bak
+*.swp

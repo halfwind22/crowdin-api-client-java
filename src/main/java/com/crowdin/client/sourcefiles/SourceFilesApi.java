@@ -4,6 +4,7 @@ import com.crowdin.client.core.CrowdinApi;
 import com.crowdin.client.core.http.HttpRequestConfig;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.util.SortOrderGenerator;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.DownloadLink;
@@ -11,6 +12,7 @@ import com.crowdin.client.core.model.DownloadLinkResponseObject;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.core.model.SortOrder;
 import com.crowdin.client.sourcefiles.model.*;
 
 import java.util.List;
@@ -47,6 +49,29 @@ public class SourceFilesApi extends CrowdinApi {
         return BranchResponseList.to(branchResponseList);
     }
 
+    /**
+     * @param projectId project identifier
+     * @param name filter by branch name
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id) 
+     * @return list of branches
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.projects.branches.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.projects.branches.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Branch> listBranches(Long projectId, String name, Integer limit, Integer offset, Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "name", Optional.ofNullable(name),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        BranchResponseList branchResponseList = this.httpClient.get(this.url + "/projects/" + projectId + "/branches", new HttpRequestConfig(queryParams), BranchResponseList.class);
+        return BranchResponseList.to(branchResponseList);
+    }
+    
     /**
      * @param projectId project identifier
      * @param request request object
@@ -131,6 +156,35 @@ public class SourceFilesApi extends CrowdinApi {
 
     /**
      * @param projectId project identifier
+     * @param branchId filter by branch id
+     * @param directoryId filter by directory id
+     * @param filter filter directories by name
+     * @param recursion use to list directories recursively
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id) 
+     * @return list of directories
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.projects.directories.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.projects.directories.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<Directory> listDirectories(Long projectId, Long branchId, Long directoryId, String filter, Object recursion, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "branchId", Optional.ofNullable(branchId),
+                "directoryId", Optional.ofNullable(directoryId),
+                "filter", Optional.ofNullable(filter),
+                "recursion", Optional.ofNullable(recursion),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        DirectoryResponseList directoryResponseList = this.httpClient.get(this.url + "/projects/" + projectId + "/directories", new HttpRequestConfig(queryParams), DirectoryResponseList.class);
+        return DirectoryResponseList.to(directoryResponseList);
+    }    
+    
+    /**
+     * @param projectId project identifier
      * @param request request object
      * @return newly created directory
      * @see <ul>
@@ -211,6 +265,35 @@ public class SourceFilesApi extends CrowdinApi {
         return FileInfoResponseList.to(fileInfoResponseList);
     }
 
+    /**
+     * @param projectId project identifier
+     * @param branchId filter by branch id
+     * @param directoryId filter by directory id
+     * @param filter filter files by name
+     * @param recursion use to list directories recursively
+     * @param limit maximum number of items to retrieve (default 25)
+     * @param offset starting offset in the collection (default 0)
+     * @param orderByMap map containing the sort keys and strategy (default id)
+     * @return list of files
+     * @see <ul>
+     * <li><a href="https://developer.crowdin.com/api/v2/#operation/api.projects.files.getMany" target="_blank"><b>API Documentation</b></a></li>
+     * <li><a href="https://developer.crowdin.com/enterprise/api/v2/#operation/api.projects.files.getMany" target="_blank"><b>Enterprise API Documentation</b></a></li>
+     * </ul>
+     */
+    public ResponseList<? extends FileInfo> listFiles(Long projectId, Long branchId, Long directoryId, String filter, Object recursion, Integer limit, Integer offset,Map<String,SortOrder> orderByMap) throws HttpException, HttpBadRequestException {
+        Map<String, Optional<Object>> queryParams = HttpRequestConfig.buildUrlParams(
+                "branchId", Optional.ofNullable(branchId),
+                "directoryId", Optional.ofNullable(directoryId),
+                "filter", Optional.ofNullable(filter),
+                "recursion", Optional.ofNullable(recursion),
+                "limit", Optional.ofNullable(limit),
+                "offset", Optional.ofNullable(offset),
+                "orderBy",Optional.ofNullable(SortOrderGenerator.generateSortParam(orderByMap))
+        );
+        FileInfoResponseList fileInfoResponseList = this.httpClient.get(this.url + "/projects/" + projectId + "/files", new HttpRequestConfig(queryParams), FileInfoResponseList.class);
+        return FileInfoResponseList.to(fileInfoResponseList);
+    }
+    
     /**
      * @param projectId project identifier
      * @param request request object
